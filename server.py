@@ -37,5 +37,10 @@ def classify():
     return 'file not exist'
 
 
+@app.route('/test', methods=['POST', 'GET'])
+def test():
+    return classify_pic_test()
+
+
 if __name__ == '__main__':
     app.run(host=FLASK_HOST, port=FLASK_PORT, debug=FLASK_DEBUG)

@@ -24,6 +24,13 @@ def classify_pic(filename):
     # if os.path.exists(secure_filename(path)) and allowed_file(filename):
     #     image = cv2.imread(path)
     #     if image:
-    print('path:%s' % path)
-    net_fun.main()
-    return 'done'
+    return "todo"
+
+
+def classify_pic_test():
+    net = net_fun.NetFun()
+    pred, labels, classify_time = net.classify()
+    classes = net.classes
+    for j in range(5 if 5 < net.batch_size else net.batch_size):
+        print(classes[pred[j, 0]], '(', classes[labels[j]], ')')
+    return 'classify {} images in {:.6f}s'.format(net.batch_size, classify_time)
