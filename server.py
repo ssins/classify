@@ -34,7 +34,7 @@ def upload_file():
 def classify():
     filename = request.args.get('filename', '')
     if filename != '':
-        return classify_pic([filename, filename, filename])
+        return classify_pic([filename])
     return 'file not exist'
 
 
