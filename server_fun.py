@@ -1,9 +1,9 @@
 import os
-import net_fun
-
 from flask import url_for
 from werkzeug import secure_filename
+import json
 
+import net_fun
 from config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
 
 
@@ -15,16 +15,25 @@ def upload_files(file):
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(UPLOAD_FOLDER, filename))
-        return 'success upload: %s' % url_for('uploaded_file', filename=filename)
+        return filename
 
 
-def classify_pic(filename):
-    filename = secure_filename(filename)
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    # if os.path.exists(secure_filename(path)) and allowed_file(filename):
-    #     image = cv2.imread(path)
-    #     if image:
-    return "todo"
+def classify_pic(filenames):
+    images = []
+    for filename in filenames:
+        filename = secure_filename(filename)
+        path = os.path.join(UPLOAD_FOLDER, filename)
+        print(path)
+        if os.path.exists(path) and allowed_file(filename):
+            images.append(path)
+    if len(images) < 1:
+        return "all files not exist"
+    net = net_fun.NetFun()
+    pred, classify_time = net.classify(images=images)
+    classes = net.classes
+    data = [{'time': classify_time, 'count': len(
+        images), 'result': [classes[pred[j, 0]] for j in range(len(images))]}]
+    return json.dumps(data)
 
 
 def classify_pic_test():

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 from werkzeug import SharedDataMiddleware
 
 from config import *
@@ -17,7 +17,8 @@ app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
-        return upload_files(file)
+        filename = upload_files(file)
+        return redirect(url_for('classify', filename=filename))
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -33,13 +34,13 @@ def upload_file():
 def classify():
     filename = request.args.get('filename', '')
     if filename != '':
-        return classify_pic(filename)
+        return classify_pic([filename, filename, filename])
     return 'file not exist'
 
 
-@app.route('/test', methods=['POST', 'GET'])
-def test():
-    return classify_pic_test()
+# @app.route('/test', methods=['POST', 'GET'])
+# def test():
+#     return classify_pic_test()
 
 
 if __name__ == '__main__':

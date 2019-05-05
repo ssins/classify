@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "C:\\Users\\admin\\AppData\\Local\\conda\\conda\\envs\\deeplearning\\python.exe",
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+}
