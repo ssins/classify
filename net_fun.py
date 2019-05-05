@@ -50,7 +50,6 @@ class NetFun:
             time_start = time.time()
             data_iter = iter(self.test_loader)
             images, labels = data_iter.next()
-            print(images.size())
             pred = self.__run(images)
             time_end = time.time()
             return pred, labels, time_end - time_start
@@ -58,8 +57,6 @@ class NetFun:
             time_start = time.time()
             imgs = [self.pil_loader(path) for path in images]
             imgs = torch.stack(imgs, 0)
-            print(type(imgs))
-            print(imgs.size())
             pred = self.__run(imgs)
             time_end = time.time()
             return pred, time_end - time_start
