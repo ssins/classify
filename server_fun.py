@@ -23,7 +23,6 @@ def classify_pic(filenames):
     for filename in filenames:
         filename = secure_filename(filename)
         path = os.path.join(UPLOAD_FOLDER, filename)
-        print(path)
         if os.path.exists(path) and allowed_file(filename):
             images.append(path)
     if len(images) < 1:

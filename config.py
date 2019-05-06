@@ -15,3 +15,9 @@ IS_LOAD_MODEL = True
 DATASET_TRAIN_ROOT_PATH = 'data/FRUIT/Training/'
 DATASET_TEST_ROOT_PATH = 'data/FRUIT/Test/'
 
+# mysql
+HOST = "localhost"
+PORT = 3306
+USER = "root"
+PASSWD = "1qaz2wsx"
+DB = "classify"
