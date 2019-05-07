@@ -21,3 +21,4 @@ PORT = 3306
 USER = "root"
 PASSWD = "1qaz2wsx"
 DB = "classify"
+IS_PRINT_SQL = True
