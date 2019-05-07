@@ -8,6 +8,7 @@ from fastai.vision.models.wrn import *
 from config import *
 from my_net import *
 import time
+from dataset_utils import myDataset
 
 
 class NetFun:
@@ -24,7 +25,7 @@ class NetFun:
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
-        self.train_loader, self.test_loader, self.classes = self.__load_data()
+        self.train_loader, self.test_loader, self.classes = self.__load_data_from_database()
         self.model = WideResNet(
             num_groups=3, N=3, num_classes=len(self.classes), k=6, drop_p=0.)
         self.model = self.model.to(self.device)
@@ -117,6 +118,18 @@ class NetFun:
                 output = output.float()
             pred = output.to('cpu').topk(2, dim=1)[1]
         return pred
+    
+    def __load_data_from_database(self):
+        data = myDataset('fruit')
+        data.load()
+        data.shuffle()
+        train_set, test_set = data.split(0.8, True, self.transform)
+        train_loader = torch.utils.data.DataLoader(
+            train_set, batch_size=self.batch_size, shuffle=True)
+        test_loader = torch.utils.data.DataLoader(
+            test_set, batch_size=self.batch_size, shuffle=True)
+        return train_loader, test_loader, train_set.classes
+
 
     def __load_data(self):
         train_set = datasets.ImageFolder(root=self.train_path,

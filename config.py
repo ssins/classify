@@ -22,3 +22,6 @@ USER = "root"
 PASSWD = "1qaz2wsx"
 DB = "classify"
 IS_PRINT_SQL = True
+
+# dataset
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']

@@ -14,41 +14,42 @@ class __MySql():
             'charset': 'utf8',
             'cursorclass': cursors.DictCursor
         }
+        self.is_print_log = IS_PRINT_SQL
         self.db = MySQLdb.connect(**self.parameters)
 
     def __del__(self):
         self.db.close()
 
     def query(self, sql):
-        if IS_PRINT_SQL:
+        if self.is_print_log:
             print(sql)
         c = self.db.cursor()
         try:
             c.execute(sql)
             r = c.fetchall()
             c.close()
-            if IS_PRINT_SQL:
+            if self.is_print_log:
                 print('---Success')
             return r
         except:
-            if IS_PRINT_SQL:
+            if self.is_print_log:
                 print('---Fail')
             return None
 
     def run(self, sql):
-        if IS_PRINT_SQL:
+        if self.is_print_log:
             print(sql)
         c = self.db.cursor()
         try:
             c.execute(sql)
             self.db.commit()
             c.close()
-            if IS_PRINT_SQL:
+            if self.is_print_log:
                 print('---Success')
             return True
         except:
             self.db.rollback()
-            if IS_PRINT_SQL:
+            if self.is_print_log:
                 print('---Fail')
             return False
 
