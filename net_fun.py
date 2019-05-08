@@ -17,17 +17,17 @@ class NetFun:
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.epochs = EPOCHS
         self.batch_size = BATCH_SIZE
-        self.train_path = DATASET_TRAIN_ROOT_PATH
-        self.test_path = DATASET_TEST_ROOT_PATH
+        # self.train_path = DATASET_TRAIN_ROOT_PATH
+        # self.test_path = DATASET_TEST_ROOT_PATH
         self.use_half = IS_USE_HALF
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-
-        self.train_loader, self.test_loader, self.classes = self.__load_data_from_database()
+        self.data_set_name = 'fruit'
+        self.train_loader, self.test_loader, self.class_to_idx, self.idx_to_class = self.__load_data_from_database()
         self.model = WideResNet(
-            num_groups=3, N=3, num_classes=len(self.classes), k=6, drop_p=0.)
+            num_groups=3, N=3, num_classes=len(self.idx_to_class), k=6, drop_p=0.)
         self.model = self.model.to(self.device)
 
         if self.use_half:
@@ -99,7 +99,6 @@ class NetFun:
                 topx_correct += list(
                     filter(lambda x: reduce(lambda l, m: l or m, list(map(lambda t: x[top_x] == t, x[0:top_x]))),
                            torch.cat([topx, target.view(-1, 1)], dim=1))).__len__()
-
         test_loss /= len(self.test_loader.dataset)
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%), Top-{}: {}/{} ({:.2f}%)\n'.format(
             test_loss, correct, len(self.test_loader.dataset),
@@ -118,9 +117,9 @@ class NetFun:
                 output = output.float()
             pred = output.to('cpu').topk(2, dim=1)[1]
         return pred
-    
+
     def __load_data_from_database(self):
-        data = myDataset('fruit')
+        data = myDataset(self.data_set_name)
         data.load()
         data.shuffle()
         train_set, test_set = data.split(0.8, True, self.transform)
@@ -128,19 +127,18 @@ class NetFun:
             train_set, batch_size=self.batch_size, shuffle=True)
         test_loader = torch.utils.data.DataLoader(
             test_set, batch_size=self.batch_size, shuffle=True)
-        return train_loader, test_loader, train_set.classes
+        return train_loader, test_loader, data.class_to_idx, data.idx_to_class
 
-
-    def __load_data(self):
-        train_set = datasets.ImageFolder(root=self.train_path,
-                                         transform=self.transform)
-        train_loader = torch.utils.data.DataLoader(
-            train_set, batch_size=self.batch_size, shuffle=True)
-        test_set = datasets.ImageFolder(root=self.test_path,
-                                        transform=self.transform)
-        test_loader = torch.utils.data.DataLoader(
-            test_set, batch_size=self.batch_size, shuffle=True)
-        return train_loader, test_loader, train_set.classes
+    # def __load_data(self):
+    #     train_set = datasets.ImageFolder(root=self.train_path,
+    #                                      transform=self.transform)
+    #     train_loader = torch.utils.data.DataLoader(
+    #         train_set, batch_size=self.batch_size, shuffle=True)
+    #     test_set = datasets.ImageFolder(root=self.test_path,
+    #                                     transform=self.transform)
+    #     test_loader = torch.utils.data.DataLoader(
+    #         test_set, batch_size=self.batch_size, shuffle=True)
+    #     return train_loader, test_loader, train_set.class_to_idx
 
     def pil_loader(self, path):
         from PIL import Image

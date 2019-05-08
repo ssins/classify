@@ -32,6 +32,7 @@ class __MySql():
                 print('---Success')
             return r
         except:
+            c.close()
             if self.is_print_log:
                 print('---Fail')
             return None
@@ -48,6 +49,7 @@ class __MySql():
                 print('---Success')
             return True
         except:
+            c.close()
             self.db.rollback()
             if self.is_print_log:
                 print('---Fail')

@@ -51,6 +51,7 @@ class myDataset():
             self.id = result[0]['ID']
             self.root_path = result[0]['ROOT_PATH']
             self.valied = True
+            self.class_to_idx, self.idx_to_class = self._get_classes()
 
     def load(self, limit=None):
         if not self.valied:
@@ -133,18 +134,18 @@ class myDataset():
             if root_path is None:
                 return False
             return self._add_data_set_from_folder(name, root_path)
+        data_set_id = result[0]['ID']
         root = root_path if root_path is not None else result[0]['ROOT_PATH']
         sql = SQL().Update('data_set').Set(
-            root_path=root).Where(id=result[0]['ID']).sql
+            root_path=root).Where(id=data_set_id).sql
         mysql.run(sql)
-        classes, class_to_idx = self.__find_classes(root)
-
+        classes, _ = self.__find_classes(root)
         tmp = mysql.is_print_log
         mysql.is_print_log = False
-
-        self._edit_labels(name, **class_to_idx)
+        count, classes_count = self._add_labels(classes, name)
+        class_to_idx, idx_to_class = self._get_classes(data_set_id=data_set_id)
         if tmp:
-            print('>>update labels done')
+            print('>>add {} labels done, total({})'.format(count, classes_count))
         count = 0
         for label in classes:
             pre_path = os.path.join(root, label)
@@ -156,26 +157,32 @@ class myDataset():
                     count += 1
                     if tmp and count % 1000 == 0:
                         print('>>insert {} imgs'.format(count))
+            if tmp:
+                print('>>insert {} imgs done'.format(count))
         mysql.is_print_log = tmp
         return True
 
-    def _edit_labels(self, __data_set_name, **labels):
-        exist, result_ds = mysql.exist('data_set', name=__data_set_name)
+    def _add_labels(self, labels, data_set_name=None):
+        if data_set_name is None:
+            data_set_name = self.name
+        exist, result_ds = mysql.exist('data_set', name=data_set_name)
+        count = 0
         if exist:
             data_set_id = result_ds[0]['ID']
-            for (value, idx) in labels.items():
-                exist, result_lb = mysql.exist(
-                    'label', data_set_id=result_ds[0]['ID'], value=value)
-                if exist:
-                    sql = SQL().Update('label').Set(
-                        idx=idx).Where(id=result_lb[0]['ID']).sql
-                    mysql.run(sql)
-                else:
+            exist, result_lb_list = mysql.exist(
+                'label', data_set_id=data_set_id)
+            label_value_list = [x['VALUE']
+                                for x in result_lb_list] if exist else []
+            start_idx = 0
+            if exist:
+                start_idx = len(result_lb_list)
+            for label in labels:
+                if label not in label_value_list:
                     sql = SQL().Insert('label').Values(
-                        data_set_id=data_set_id, value=value, idx=idx).sql
-                    mysql.run(sql)
-            return True
-        return False
+                        data_set_id=data_set_id, value=label, idx=(start_idx+count)).sql
+                    if mysql.run(sql):
+                        count += 1
+        return count, start_idx + count
 
     def _add_img(self, data_set_name, path, idx=None):
         exist, result = mysql.exist('data_set', name=data_set_name)
@@ -187,6 +194,33 @@ class myDataset():
                     path=path, data_set_id=data_set_id, label_idx=idx).sql
                 return mysql.run(sql)
         return False
+
+    def _get_classes(self, data_set_id=None):
+        id = self.id if data_set_id is None else data_set_id
+        sql = SQL().Select('label', ['idx', 'value']).Where(
+            data_set_id=id).sql
+        result = mysql.query(sql)
+        idx_to_class = {}
+        class_to_idx = {}
+        if result is not None:
+            for label in result:
+                idx_to_class[label['idx']] = label['value']
+            for (idx, cla) in idx_to_class.items():
+                class_to_idx[cla] = idx
+        return class_to_idx, idx_to_class
+
+    def _re_init(self, confirm_name):
+        if confirm_name != self.name:
+            return False
+        if not self.valied:
+            return False
+        sql = SQL().Delete('label').Where(data_set_id=self.id).sql
+        mysql.run(sql)
+        sql = SQL().Delete('image').Where(data_set_id=self.id).sql
+        mysql.run(sql)
+        sql = SQL().Delete('model').Where(data_set_id=self.id).sql
+        mysql.run(sql)
+        return True
 
     def __find_classes(self, dir):
         if sys.version_info >= (3, 5):
@@ -213,17 +247,10 @@ class myDataset():
 
 if __name__ == "__main__":
     data = myDataset('fruit')
-    data.load()
-    data.shuffle()
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-    train_data_set, test_data_set = data.split(0.8, True, transform)
-    print(len(train_data_set))
-    print(train_data_set[434])
-    print(len(test_data_set))
-    # data._add_data_set_from_folder('test', 'data/FRUIT/Training/')
+    if data._re_init('fruit'):
+        data._add_data_set_from_folder('fruit', 'data/FRUIT/Training/')
+    else:
+        print('f')
     # # data.load()
     # print(data.get_model())
     # print(data.data)

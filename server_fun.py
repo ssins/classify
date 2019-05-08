@@ -29,9 +29,9 @@ def classify_pic(filenames):
         return "all files not exist"
     net = net_fun.NetFun()
     pred, classify_time = net.classify(images=images)
-    classes = net.classes
+    idx_to_class = net.idx_to_class
     data = [{'time': classify_time, 'count': len(
-        images), 'result': [classes[pred[j, 0]] for j in range(len(images))]}]
+        images), 'result': [idx_to_class[pred[j, 0].item()] for j in range(len(images))]}]
     return json.dumps(data)
 
 
