@@ -27,7 +27,9 @@ def classify_pic(filenames):
             images.append(path)
     if len(images) < 1:
         return "all files not exist"
-    net = net_fun.NetFun()
+    net = net_fun.NetFun('fruit')
+    #net.load_data_set()
+    net.load_model()
     pred, classify_time = net.classify(images=images)
     idx_to_class = net.idx_to_class
     data = [{'time': classify_time, 'count': len(

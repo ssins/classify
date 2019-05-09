@@ -12,39 +12,55 @@ from dataset_utils import myDataset
 
 
 class NetFun:
-    def __init__(self):
+    def __init__(self, data_set_name):
+        self.data_set_name = data_set_name
+        self.model_weidth = None
+        self.data = myDataset(self.data_set_name)
+        self.class_to_idx, self.idx_to_class = self.data.class_to_idx, self.data.idx_to_class
+        self.train_loader, self.test_loader = None, None
+        self.model = None
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-        self.epochs = EPOCHS
-        self.batch_size = BATCH_SIZE
-        # self.train_path = DATASET_TRAIN_ROOT_PATH
-        # self.test_path = DATASET_TEST_ROOT_PATH
-        self.use_half = IS_USE_HALF
+        self.default_epochs = DEFAULT_EPOCHS
+        self.batch_size = DEFAULT_BATCH_SIZE
+        self.use_half = False
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        self.data_set_name = 'fruit'
-        self.train_loader, self.test_loader, self.class_to_idx, self.idx_to_class = self.__load_data_from_database()
-        self.model = WideResNet(
-            num_groups=3, N=3, num_classes=len(self.idx_to_class), k=6, drop_p=0.)
-        self.model = self.model.to(self.device)
+        self.optimizer = None
+        self.__pre_net()
 
-        if self.use_half:
-            self.model = self.model.half()
-        if torch.cuda.device_count() > 1:
-            self.model = nn.DataParallel(self.model)
-        self.optimizer = optim.SGD(
-            self.model.parameters(), lr=0.1, momentum=0.9)
-        if IS_LOAD_MODEL:
-            self.model.load_state_dict(torch.load(PATH))
+    def load_model(self, model_name=None, model_id=None):
+        self.model_weidth = self.data.get_model(name=model_name, id=model_id)
+        if self.model_weidth:
+            try:
+                self.use_half = (bool)(self.model_weidth['IS_HALF'])
+                self.__pre_net()
+                self.model.load_state_dict(
+                    torch.load(self.model_weidth['PATH']))
+            except:
+                return False
+            return True
+        return False
 
-    def train(self):
+    def load_data_set(self, batch_size=None, train_percent=0.8, transform=None):
+        if not batch_size:
+            self.batch_size = batch_size
+        if transform:
+            self.transform = transform
+        return self.__load_data_from_database(train_percent)
+
+    # todo test fun
+    def train(self, epoch=None,sava_path=None):
+        if not epoch:
+            epoch = self.default_epochs
         for epoch in range(1, self.epochs + 1):
             self.__train(epoch)
             self.__test(top_x=3)
-            torch.save(self.model.state_dict(), PATH)
-            print('-----model saved:%s' % PATH)
+            if sava_path:
+                if self.__save_model(save_path):
+                    print('-----model saved:%s' % PATH)
 
     def classify(self, images=None):
         if images is None:
@@ -61,6 +77,22 @@ class NetFun:
             pred = self.__run(imgs)
             time_end = time.time()
             return pred, time_end - time_start
+    
+    def __save_path(self,save_path):
+        if torch.save(self.model.state_dict(), save_path):
+            return self.data.save_model(self.model_weidth['NAME'],save_path,self.model_weidth['GPU_COUNT'])
+        return False
+
+    def __pre_net(self):
+        self.model = WideResNet(
+            num_groups=3, N=3, num_classes=len(self.idx_to_class), k=6, drop_p=0.)
+        self.model = self.model.to(self.device)
+        if self.use_half:
+            self.model = self.model.half()
+        if self.model_weidth and torch.cuda.device_count() > 1 and self.model_weidth['GPU_COUNT'] > 1:
+            self.model = nn.DataParallel(self.model)
+        self.optimizer = optim.SGD(
+            self.model.parameters(), lr=0.1, momentum=0.9)
 
     def __train(self, epoch):
         self.model.train()
@@ -118,16 +150,17 @@ class NetFun:
             pred = output.to('cpu').topk(2, dim=1)[1]
         return pred
 
-    def __load_data_from_database(self):
-        data = myDataset(self.data_set_name)
-        data.load()
-        data.shuffle()
-        train_set, test_set = data.split(0.8, True, self.transform)
-        train_loader = torch.utils.data.DataLoader(
-            train_set, batch_size=self.batch_size, shuffle=True)
-        test_loader = torch.utils.data.DataLoader(
-            test_set, batch_size=self.batch_size, shuffle=True)
-        return train_loader, test_loader, data.class_to_idx, data.idx_to_class
+    def __load_data_from_database(self, train_percent):
+        if self.data.valied:
+            self.data.load()
+            train_set, test_set = self.data.split(
+                train_percent, True, self.transform)
+            self.train_loader = torch.utils.data.DataLoader(
+                train_set, batch_size=self.batch_size, shuffle=True)
+            self.test_loader = torch.utils.data.DataLoader(
+                test_set, batch_size=self.batch_size, shuffle=True)
+            return True
+        return False
 
     # def __load_data(self):
     #     train_set = datasets.ImageFolder(root=self.train_path,
@@ -148,3 +181,10 @@ class NetFun:
             if self.transform is not None:
                 img = self.transform(img)
             return img
+
+
+# if __name__ == "__main__":
+#     test = [0, ]
+#     if test:
+#         print('f1')
+#     print('t')

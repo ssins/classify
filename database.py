@@ -55,14 +55,9 @@ class __MySql():
                 print('---Fail')
             return False
 
-    def exist(self, tabel, **columns):
+    def find(self, tabel, **columns):
         sql = SQL().Select(tabel).Where(**columns).sql
-        r = self.query(sql)
-        if r is None:
-            return None, None
-        if len(r) < 1:
-            return False, None
-        return True, r
+        return self.query(sql)
 
 
 class SQL():
@@ -139,7 +134,8 @@ class SQL():
 
     def Where(self, **columns):
         cols = self.__ts_whe_cols(**columns)
-        self.sql = self.sql + ('WHERE %s ' % (cols))
+        if cols:
+            self.sql = self.sql + ('WHERE %s ' % (cols))
         return self
 
     def Values(self, **columns):

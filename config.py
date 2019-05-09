@@ -8,12 +8,12 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
 # train net
 IS_USE_HALF = True
-BATCH_SIZE = 256
-EPOCHS = 10
+DEFAULT_BATCH_SIZE = 256
+DEFAULT_EPOCHS = 10
 PATH = 'model/fruit/wrn22.pth'
-IS_LOAD_MODEL = True
-DATASET_TRAIN_ROOT_PATH = 'data/FRUIT/Training/'
-DATASET_TEST_ROOT_PATH = 'data/FRUIT/Test/'
+# IS_LOAD_MODEL = True
+# DATASET_TRAIN_ROOT_PATH = 'data/FRUIT/Training/'
+# DATASET_TEST_ROOT_PATH = 'data/FRUIT/Test/'
 
 # mysql
 HOST = "localhost"

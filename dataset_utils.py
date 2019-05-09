@@ -46,8 +46,8 @@ class myDataset():
         self.test_data_set = None
         self.id = -1
         self.valied = False
-        exist, result = mysql.exist('data_set', name=self.name)
-        if exist:
+        result = mysql.find('data_set', name=self.name)
+        if result:
             self.id = result[0]['ID']
             self.root_path = result[0]['ROOT_PATH']
             self.valied = True
@@ -92,9 +92,9 @@ class myDataset():
         if not self.valied:
             return False
         if id is not None:
-            exist, result = mysql.exist(
+            result = mysql.find(
                 'model', id=id, data_set_id=self.id, name=name)
-            if exist:
+            if result:
                 return result[0]
             return None
         sql = SQL().Select('model').Where(data_set_id=self.id, name=name)\
@@ -119,15 +119,15 @@ class myDataset():
         return mysql.run(sql)
 
     def _add_data_set(self, name, root_path=None):
-        exist, result = mysql.exist('data_set', name=name)
-        if exist is False:
+        result = mysql.find('data_set', name=name)
+        if result is False:
             sql = SQL().Insert('data_set').Values(name=name, root_path=root_path).sql
             return mysql.run(sql)
         return False
 
     def _add_data_set_from_folder(self, name, root_path=None):
-        exist, result = mysql.exist('data_set', name=name)
-        if exist is False:
+        result = mysql.find('data_set', name=name)
+        if result is False:
             sql = SQL().Insert('data_set').Values(name=name, root_path=root_path).sql
             if not mysql.run(sql):
                 return False
@@ -165,16 +165,16 @@ class myDataset():
     def _add_labels(self, labels, data_set_name=None):
         if data_set_name is None:
             data_set_name = self.name
-        exist, result_ds = mysql.exist('data_set', name=data_set_name)
+        result_ds = mysql.find('data_set', name=data_set_name)
         count = 0
-        if exist:
+        if result_ds:
             data_set_id = result_ds[0]['ID']
-            exist, result_lb_list = mysql.exist(
+            result_lb_list = mysql.find(
                 'label', data_set_id=data_set_id)
             label_value_list = [x['VALUE']
-                                for x in result_lb_list] if exist else []
+                                for x in result_lb_list] if result_lb_list else []
             start_idx = 0
-            if exist:
+            if result_lb_list:
                 start_idx = len(result_lb_list)
             for label in labels:
                 if label not in label_value_list:
@@ -185,10 +185,10 @@ class myDataset():
         return count, start_idx + count
 
     def _add_img(self, data_set_name, path, idx=None):
-        exist, result = mysql.exist('data_set', name=data_set_name)
-        if exist:
+        result = mysql.find('data_set', name=data_set_name)
+        if result:
             data_set_id = result[0]['ID']
-            exist, _ = mysql.exist('label', data_set_id=data_set_id, idx=idx)
+            exist = mysql.find('label', data_set_id=data_set_id, idx=idx)
             if exist:
                 sql = SQL().Insert('image').Values(
                     path=path, data_set_id=data_set_id, label_idx=idx).sql
@@ -247,17 +247,13 @@ class myDataset():
 
 if __name__ == "__main__":
     data = myDataset('fruit')
-    if data._re_init('fruit'):
-        data._add_data_set_from_folder('fruit', 'data/FRUIT/Training/')
-    else:
-        print('f')
-    # # data.load()
-    # print(data.get_model())
-    # print(data.data)
-    # # data.shuffle()
-    # data.split(0.5)
-    # r = Dataset()._add_labels('test',lb1=0,lb2=1)
-    # r= Dataset()._add_img('test','apple/3.jpg',4)
+    # if data._re_init('fruit'):
+    #     data._add_data_set_from_folder('fruit', 'data/FRUIT/Training/')
+    # else:
+    #     print('f')
+    data.load()
+    data.shuffle()
+    train,test=data.split(0.5)
     # print(r)
     # r= Dataset()._add_img('test','apple/3.jpg')
     # print(r)
@@ -266,5 +262,5 @@ if __name__ == "__main__":
     #     transforms.Normalize(
     #         (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     # ]))
-    # print(len(test_set))
-    # print(test_set[663][1])
+    print(len(train))
+    print(train[663][1])
