@@ -1,3 +1,8 @@
+import os
+BASE_DIR = os.getcwd()
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:1qaz2wsx@localhost:3306/classify'  # 数据库URI
+SQLALCHEMY_TRACK_MODIFICATIONS = False  # 查询跟踪，不太需要，False，不占用额外的内存
+
 # flask server
 FLASK_HOST = '0.0.0.0'
 FLASK_PORT = 3333
