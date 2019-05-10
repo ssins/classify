@@ -1,15 +1,8 @@
-from App import create_app
-from App.Index import index
-from App.Dataset import dataset
-from App.Net import net
-
+from config import FLASK_HOST, FLASK_PORT, FLASK_DEBUG
 from flask import redirect, url_for
-from config import *
+from App import create_app
 
 app = create_app()
-app.register_blueprint(index, url_prefix='/index')
-app.register_blueprint(dataset, url_prefix='/dataset')
-app.register_blueprint(net, url_prefix='/net')
 
 
 @app.route('/')
