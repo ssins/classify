@@ -1,5 +1,4 @@
 from App.Net import static_folder
-
 import os
 import net_fun
 import json

@@ -3,13 +3,14 @@ from App.Dataset.controllers import *
 from flask import Flask, request, redirect
 from werkzeug import SharedDataMiddleware
 
-@dataset.route('/upload_pic',methods=['GET', 'POST'])
+
+@dataset.route('/upload_pic', methods=['GET', 'POST'])
 def upload_pic():
     if request.method == 'POST':
         file = request.files['file']
         filename = upload_files(file)
         return filename
-        #return redirect(url_for('classify', filename=filename))
+        # return redirect(url_for('classify', filename=filename))
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -19,9 +20,30 @@ def upload_pic():
          <input type=submit value=Upload>
     </form>
     '''
-@dataset.route('/classify', methods=['POST', 'GET'])
-def classify():
-    filename = request.args.get('filename', '')
-    if filename != '':
-        return classify_pic([filename])
-    return 'file not exist'
+
+
+@dataset.route('/add', methods=['GET', 'POST'])
+def add_ds():
+    name = request.args.get('name', '')
+    root_path = request.args.get('root_path', '')
+    if name and root_path:
+        return add_data_set(name, root_path)
+    return 'args error', 400
+
+
+@dataset.route('/update', methods=['GET', 'POST'])
+def update_ds():
+    name = request.args.get('name', '')
+    root_path = request.args.get('root_path', '')
+    if name and root_path:
+        return update_data_set(name, root_path)
+    return 'args error', 400
+
+
+@dataset.route('/delete', methods=['GET', 'POST'])
+def delete_ds():
+    name = request.args.get('name', '')
+    if name:
+        return delete_data_set(name)
+    return 'args error', 400
+

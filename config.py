@@ -1,7 +1,5 @@
 import os
 BASE_DIR = os.getcwd()
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:1qaz2wsx@localhost:3306/classify'  # 数据库URI
-SQLALCHEMY_TRACK_MODIFICATIONS = False  # 查询跟踪，不太需要，False，不占用额外的内存
 
 # flask server
 FLASK_HOST = '0.0.0.0'
@@ -10,6 +8,8 @@ FLASK_DEBUG = False
 UPLOAD_FOLDER = './static/upload/'
 ALLOWED_EXTENSIONS = set(['bmp', 'jpg', 'png', 'jpeg'])
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:1qaz2wsx@localhost:3306/classify2'  # 数据库URI
+SQLALCHEMY_TRACK_MODIFICATIONS = False  # 查询跟踪，不太需要，False，不占用额外的内存
 
 # train net
 IS_USE_HALF = True
@@ -29,4 +29,5 @@ DB = "classify"
 IS_PRINT_SQL = True
 
 # dataset
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
+                  '.bmp', '.pgm', '.tif', '.tiff', 'webp']
