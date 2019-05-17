@@ -10,7 +10,7 @@ def upload_pic():
         file = request.files['file']
         filename = upload_files(file)
         return filename
-        # return redirect(url_for('classify', filename=filename))
+        #return redirect(url_for('net.classify', filename=filename))
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -22,28 +22,36 @@ def upload_pic():
     '''
 
 
-@dataset.route('/add', methods=['GET', 'POST'])
+@dataset.route('/add', methods=['POST'])
 def add_ds():
-    name = request.args.get('name', '')
-    root_path = request.args.get('root_path', '')
+    name = request.form.get('name')
+    root_path = request.form.get('root_path')
     if name and root_path:
         return add_data_set(name, root_path)
     return 'args error', 400
 
 
-@dataset.route('/update', methods=['GET', 'POST'])
+@dataset.route('/update', methods=['POST'])
 def update_ds():
-    name = request.args.get('name', '')
-    root_path = request.args.get('root_path', '')
+    name = request.form.get('name')
+    root_path = request.form.get('root_path')
     if name and root_path:
         return update_data_set(name, root_path)
     return 'args error', 400
 
 
-@dataset.route('/delete', methods=['GET', 'POST'])
+@dataset.route('/delete', methods=['POST'])
 def delete_ds():
-    name = request.args.get('name', '')
+    name = request.form.get('name')
     if name:
         return delete_data_set(name)
     return 'args error', 400
 
+
+@dataset.route('/init', methods=['POST'])
+def init_ds():
+    name = request.form.get('name')
+    root_path = request.form.get('root_path')
+    if name:
+        return init_data_set(name, root_path)
+    return 'args error', 400

@@ -4,7 +4,7 @@ from App.Net.controllers import *
 from flask import request
 
 
-@net.route('/classify', methods=['POST','GET'])
+@net.route('/classify', methods=['GET'])
 def classify():
     path = request.args.get('path', '')
     if not path:
@@ -12,3 +12,7 @@ def classify():
         netname = request.args.get('net_name', '')
         path = os.path.join(ds_folder, netname, filename)
     return classify_pic([path])
+
+@net.route('/train')
+def train():
+    pass
