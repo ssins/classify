@@ -4,7 +4,7 @@ db = SQLAlchemy()
 
 class base():
     id = db.Column(db.Integer, primary_key=True)
-    update_time = db.Column(db.TIMESTAMP, nullable=False)
+    update_time = db.Column(db.TIMESTAMP)
 
 
 class Data_set(db.Model, base):

@@ -11,14 +11,14 @@ def root():
     return redirect(url_for('index.root'))
 
 # 初始化数据库
-# @app.route('/init')
-# def init():
-#     try:
-#         db.drop_all()
-#         db.create_all()
-#     except:
-#         return 'fail'
-#     return 'success'
+@app.route('/init')
+def init():
+    try:
+        db.drop_all()
+        db.create_all()
+    except:
+        return 'fail'
+    return 'success'
 
 @app.route('/test')
 def test():

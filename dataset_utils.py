@@ -4,7 +4,7 @@ from torchvision import datasets, transforms
 import random
 import os
 import sys
-from config import IMG_EXTENSIONS
+from config import IMG_EXTENSIONS, PATH
 
 
 class ds(Dataset):
@@ -13,12 +13,13 @@ class ds(Dataset):
         self.root_path = root_path
         self.transform = transform
         self.target_transform = target_transform
+        self.id_to_idx = None
 
     def __getitem__(self, index):
         #path = os.path.join(self.root_path, self.data[index]['PATH'])
-        path = self.root_path + self.data[index]['PATH']
+        path = self.root_path + self.data[index]['path']
         img = self.__pil_loader(path)
-        target = self.data[index]['LABEL_IDX']
+        target = self.data[index]['label_id'] - 102
         if self.transform is not None:
             img = self.transform(img)
         if self.target_transform is not None:
@@ -48,8 +49,8 @@ class myDataset():
         self.valied = False
         result = mysql.find('data_set', name=self.name)
         if result:
-            self.id = result[0]['ID']
-            self.root_path = result[0]['ROOT_PATH']
+            self.id = result[0]['id']
+            self.root_path = result[0]['root_path']
             self.valied = True
             self.class_to_idx, self.idx_to_class = self._get_classes()
 
@@ -57,7 +58,7 @@ class myDataset():
         if not self.valied:
             return -1
         sql = SQL().Select('image').Where(data_set_id=self.id)
-        sql.sql = sql.sql + "and label_idx is not null "
+        sql.sql = sql.sql + "and label_id is not null "
         if limit is not None:
             sql = sql.Limit(limit)
         sql = sql.sql
@@ -104,16 +105,15 @@ class myDataset():
             return result[0]
         return None
 
-    def save_model(self, name, path, gpu_counts=None, is_half=None, md5=None):
+    def save_model(self, name, path, gpu_counts=None, is_half=None):
         if not self.valied:
             return False
         cols = {
             'name': name,
             'path': path,
             'data_set_id': self.id,
-            'gpu_counts': gpu_counts,
-            'is_half': is_half,
-            'md5': md5
+            'gpu_count': gpu_counts,
+            'is_half': is_half
         }
         sql = SQL().Insert('model').Values(**cols).sql
         return mysql.run(sql)
@@ -134,8 +134,8 @@ class myDataset():
             if root_path is None:
                 return False
             return self._add_data_set_from_folder(name, root_path)
-        data_set_id = result[0]['ID']
-        root = root_path if root_path is not None else result[0]['ROOT_PATH']
+        data_set_id = result[0]['id']
+        root = root_path if root_path is not None else result[0]['root_path']
         sql = SQL().Update('data_set').Set(
             root_path=root).Where(id=data_set_id).sql
         mysql.run(sql)
@@ -168,10 +168,10 @@ class myDataset():
         result_ds = mysql.find('data_set', name=data_set_name)
         count = 0
         if result_ds:
-            data_set_id = result_ds[0]['ID']
+            data_set_id = result_ds[0]['id']
             result_lb_list = mysql.find(
                 'label', data_set_id=data_set_id)
-            label_value_list = [x['VALUE']
+            label_value_list = [x['value']
                                 for x in result_lb_list] if result_lb_list else []
             start_idx = 0
             if result_lb_list:
@@ -187,11 +187,11 @@ class myDataset():
     def _add_img(self, data_set_name, path, idx=None):
         result = mysql.find('data_set', name=data_set_name)
         if result:
-            data_set_id = result[0]['ID']
+            data_set_id = result[0]['id']
             exist = mysql.find('label', data_set_id=data_set_id, idx=idx)
             if exist:
                 sql = SQL().Insert('image').Values(
-                    path=path, data_set_id=data_set_id, label_idx=idx).sql
+                    path=path, data_set_id=data_set_id, label_id=idx).sql
                 return mysql.run(sql)
         return False
 

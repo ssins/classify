@@ -23,8 +23,9 @@ class NetFun:
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.default_epochs = DEFAULT_EPOCHS
         self.batch_size = DEFAULT_BATCH_SIZE
-        self.use_half = False
+        self.use_half = IS_USE_HALF
         self.transform = transforms.Compose([
+            transforms.Resize((64,64)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
@@ -35,32 +36,32 @@ class NetFun:
         self.model_weidth = self.data.get_model(name=model_name, id=model_id)
         if self.model_weidth:
             try:
-                self.use_half = (bool)(self.model_weidth['IS_HALF'])
+                self.use_half = (bool)(self.model_weidth['is_half'])
                 self.__pre_net()
                 self.model.load_state_dict(
-                    torch.load(self.model_weidth['PATH']))
+                    torch.load(self.model_weidth['path']))
             except:
                 return False
             return True
         return False
 
     def load_data_set(self, batch_size=None, train_percent=0.8, transform=None):
-        if not batch_size:
+        if batch_size:
             self.batch_size = batch_size
         if transform:
             self.transform = transform
         return self.__load_data_from_database(train_percent)
 
     # todo test fun
-    def train(self, epoch=None,sava_path=None):
+    def train(self, epoch=None, save_path=PATH):
         if not epoch:
-            epoch = self.default_epochs
+            self.epochs = self.default_epochs
         for epoch in range(1, self.epochs + 1):
             self.__train(epoch)
             self.__test(top_x=3)
-            if sava_path:
+            if save_path:
                 if self.__save_model(save_path):
-                    print('-----model saved:%s' % PATH)
+                    print('-----model saved:%s' % save_path)
 
     def classify(self, images=None):
         if images is None:
@@ -77,11 +78,11 @@ class NetFun:
             pred = self.__run(imgs)
             time_end = time.time()
             return pred, time_end - time_start
-    
-    def __save_path(self,save_path):
-        if torch.save(self.model.state_dict(), save_path):
-            return self.data.save_model(self.model_weidth['NAME'],save_path,self.model_weidth['GPU_COUNT'])
-        return False
+
+    def __save_model(self, save_path):
+        save_path = save_path.replace(".pth", time.strftime("_%Y%m%d%H%M%S", time.localtime()) + ".pth")
+        torch.save(self.model.state_dict(), save_path)
+        return self.data.save_model("test", save_path, torch.cuda.device_count(), '1' if self.use_half else '0')
 
     def __pre_net(self):
         self.model = WideResNet(
@@ -89,8 +90,8 @@ class NetFun:
         self.model = self.model.to(self.device)
         if self.use_half:
             self.model = self.model.half()
-        if self.model_weidth and torch.cuda.device_count() > 1 and self.model_weidth['GPU_COUNT'] > 1:
-            self.model = nn.DataParallel(self.model)
+        # if self.model_weidth and torch.cuda.device_count() > 1 and self.model_weidth['gpu_count'] > 1:
+        #     self.model = nn.DataParallel(self.model)
         self.optimizer = optim.SGD(
             self.model.parameters(), lr=0.1, momentum=0.9)
 
@@ -105,7 +106,7 @@ class NetFun:
             loss = F.cross_entropy(output, target)
             loss.backward()
             self.optimizer.step()
-            if (batch_idx + 1) % 200 == 0:
+            if (batch_idx + 1) % 15 == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, batch_idx *
                     len(data), len(self.train_loader.dataset),

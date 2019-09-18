@@ -13,6 +13,10 @@ def classify():
         path = os.path.join(ds_folder, netname, filename)
     return classify_pic([path])
 
-@net.route('/train')
+@net.route('/train', methods=['GET'])
 def train():
-    pass
+    name = request.args.get('name', '')
+    if not name:
+        return train_net(name)
+    return train_net()
+    
