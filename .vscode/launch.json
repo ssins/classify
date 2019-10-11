@@ -8,7 +8,7 @@
             "name": "Python: server.py",
             "type": "python",
             "request": "launch",
-            "program": "C:\\Users\\admin\\PycharmProjects\\classify\\server.py",
+            "program": "C:\\Users\\admin\\PycharmProjects\\jiliangyuan_classify\\server.py",
             "console": "integratedTerminal"
         },
         {

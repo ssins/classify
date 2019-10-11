@@ -71,4 +71,4 @@ def create_model(name):
 
 
 if __name__ == "__main__":
-    create_model('temp')
+    create_model('ocr')

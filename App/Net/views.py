@@ -16,7 +16,7 @@ def classify():
 @net.route('/train', methods=['GET'])
 def train():
     name = request.args.get('name', '')
-    if not name:
+    if name is not None:
         return train_net(name)
     return train_net()
     

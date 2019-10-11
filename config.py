@@ -13,9 +13,9 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False  # 查询跟踪，不太需要，False，
 
 # train net
 IS_USE_HALF = True
-DEFAULT_BATCH_SIZE = 64
-DEFAULT_EPOCHS = 2000
-PATH = 'model/camera/wrn22.pth'
+DEFAULT_BATCH_SIZE = 16
+DEFAULT_EPOCHS = 100
+PATH = 'model/something/wrn22_256_16_p.pth'
 # IS_LOAD_MODEL = True
 # DATASET_TRAIN_ROOT_PATH = 'data/FRUIT/Training/'
 # DATASET_TEST_ROOT_PATH = 'data/FRUIT/Test/'
@@ -26,7 +26,7 @@ PORT = 3306
 USER = "root"
 PASSWD = "123qaz..."
 DB = "classify"
-IS_PRINT_SQL = True
+IS_PRINT_SQL = False
 
 # dataset
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',

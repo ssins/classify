@@ -1,10 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 db = SQLAlchemy()
 
 
 class base():
     id = db.Column(db.Integer, primary_key=True)
-    update_time = db.Column(db.TIMESTAMP)
+    update_time = db.Column(
+        db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 
 class Data_set(db.Model, base):

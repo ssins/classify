@@ -25,7 +25,7 @@ class NetFun:
         self.batch_size = DEFAULT_BATCH_SIZE
         self.use_half = IS_USE_HALF
         self.transform = transforms.Compose([
-            transforms.Resize((64,64)),
+            transforms.Resize((256,256)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
@@ -58,7 +58,7 @@ class NetFun:
             self.epochs = self.default_epochs
         for epoch in range(1, self.epochs + 1):
             self.__train(epoch)
-            self.__test(top_x=3)
+            self.__test(top_x=1)
             if save_path:
                 if self.__save_model(save_path):
                     print('-----model saved:%s' % save_path)
@@ -93,7 +93,7 @@ class NetFun:
         # if self.model_weidth and torch.cuda.device_count() > 1 and self.model_weidth['gpu_count'] > 1:
         #     self.model = nn.DataParallel(self.model)
         self.optimizer = optim.SGD(
-            self.model.parameters(), lr=0.1, momentum=0.9)
+            self.model.parameters(), lr=0.01, momentum=0.9)
 
     def __train(self, epoch):
         self.model.train()

@@ -8,8 +8,8 @@ from werkzeug import SharedDataMiddleware
 def upload_pic():
     if request.method == 'POST':
         file = request.files['file']
-        filename = upload_files(file)
-        return filename
+        result = upload_files(file)
+        return result
         #return redirect(url_for('net.classify', filename=filename))
     return '''
     <!doctype html>
@@ -22,36 +22,36 @@ def upload_pic():
     '''
 
 
-@dataset.route('/add', methods=['POST'])
+@dataset.route('/add', methods=['GET'])
 def add_ds():
-    name = request.form.get('name')
-    root_path = request.form.get('root_path')
+    name = request.args.get('name')
+    root_path = request.args.get('root_path')
     if name and root_path:
         return add_data_set(name, root_path)
     return 'args error', 400
 
 
-@dataset.route('/update', methods=['POST'])
+@dataset.route('/update', methods=['GET'])
 def update_ds():
-    name = request.form.get('name')
-    root_path = request.form.get('root_path')
+    name = request.args.get('name')
+    root_path = request.args.get('root_path')
     if name and root_path:
         return update_data_set(name, root_path)
     return 'args error', 400
 
 
-@dataset.route('/delete', methods=['POST'])
+@dataset.route('/delete', methods=['GET'])
 def delete_ds():
-    name = request.form.get('name')
+    name = request.args.get('name')
     if name:
         return delete_data_set(name)
     return 'args error', 400
 
 
-@dataset.route('/init', methods=['POST'])
+@dataset.route('/init', methods=['GET'])
 def init_ds():
-    name = request.form.get('name')
-    root_path = request.form.get('root_path')
+    name = request.args.get('name')
+    root_path = request.args.get('root_path')
     if name:
         return init_data_set(name, root_path)
     return 'args error', 400

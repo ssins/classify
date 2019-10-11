@@ -13,13 +13,17 @@ class ds(Dataset):
         self.root_path = root_path
         self.transform = transform
         self.target_transform = target_transform
-        self.id_to_idx = None
+        self.id_to_idx = {}
 
     def __getitem__(self, index):
         #path = os.path.join(self.root_path, self.data[index]['PATH'])
         path = self.root_path + self.data[index]['path']
         img = self.__pil_loader(path)
-        target = self.data[index]['label_id'] - 102
+        if self.id_to_idx.get(self.data[index]['label_id']) is None:
+            sql = SQL().Select('label').Where(id=self.data[index]['label_id'])
+            result = mysql.query(sql.sql)
+            self.id_to_idx[self.data[index]['label_id']] = result[0]['idx']
+        target = self.id_to_idx[self.data[index]['label_id']]
         if self.transform is not None:
             img = self.transform(img)
         if self.target_transform is not None:
